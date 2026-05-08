@@ -25,6 +25,9 @@
             <template #integrations>
                 <IntegrationsTab />
             </template>
+            <template #remoteSync>
+                <RemoteSyncTab />
+            </template>
             <template #advanced>
                 <AdvancedTab />
             </template>
@@ -42,6 +45,7 @@
     import IntegrationsTab from './components/Tabs/IntegrationsTab.vue';
     import MediaTab from './components/Tabs/MediaTab.vue';
     import NotificationsTab from './components/Tabs/NotificationsTab.vue';
+    import RemoteSyncTab from './components/Tabs/RemoteSyncTab.vue';
     import SocialTab from './components/Tabs/SocialTab.vue';
     import SystemTab from './components/Tabs/SystemTab.vue';
     import VrTab from './components/Tabs/VrTab.vue';
@@ -55,6 +59,7 @@
         { value: 'vr', label: t('view.settings.category.vr') },
         { value: 'media', label: t('view.settings.category.media') },
         { value: 'integrations', label: t('view.settings.category.integrations') },
+        { value: 'remoteSync', label: t('view.settings.remote_sync.title') },
         { value: 'advanced', label: t('view.settings.category.advanced') }
     ]);
 

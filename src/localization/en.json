@@ -727,6 +727,16 @@
                 "media": "Media",
                 "integrations": "Integrations"
             },
+            "remote_sync": {
+                "title": "Remote Sync",
+                "remote_url": "Remote URL",
+                "remote_token": "Remote token",
+                "pair": "Pair remote",
+                "sync_now": "Sync from remote",
+                "forget": "Forget remote",
+                "paired": "Paired remote:",
+                "last_result": "Imported {imported}, skipped {skipped}"
+            },
             "social": {
                 "interaction": {
                     "header": "Interaction"
