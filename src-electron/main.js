@@ -56,6 +56,7 @@ let trayIconNotify = null;
 // Get launch arguments
 let appImagePath = process.env.APPIMAGE;
 const args = process.argv.slice(1);
+const headless = args.includes('--headless');
 const noInstall = args.includes('--no-install');
 const x11 = args.includes('--x11');
 const noDesktop = args.includes('--no-desktop');
@@ -906,7 +907,35 @@ function applyWindowState() {
     }
 }
 
-app.whenReady().then(() => {
+async function startHeadlessElectron() {
+    const headlessBundle = path.join(
+        rootDir,
+        'build/headless/vrcx-headless.cjs'
+    );
+    const { parseHeadlessArgs, startHeadlessRuntime } = require(headlessBundle);
+    const headlessArgs = parseHeadlessArgs(args);
+    const ownerUser = { current: null };
+
+    await startHeadlessRuntime({
+        args: headlessArgs,
+        dotnet: {
+            VRCXStorage: interopApi.getDotNetObject('VRCXStorage'),
+            SQLite: interopApi.getDotNetObject('SQLite'),
+            WebApi: interopApi.getDotNetObject('WebApi')
+        },
+        ownerUser,
+        loginIfNeeded: async () => {
+            throw new Error('Headless console login is wired in Task 9');
+        }
+    });
+}
+
+app.whenReady().then(async () => {
+    if (headless) {
+        await startHeadlessElectron();
+        return;
+    }
+
     createWindow();
     createTray();
     installVRCX();

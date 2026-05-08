@@ -93,6 +93,7 @@ function getAssetFilename({ name }) {
 }
 
 export default defineConfig(({ mode }) => {
+    const isHeadlessBuild = process.env.VRCX_HEADLESS_BUILD === 'true';
     const { SENTRY_AUTH_TOKEN: sentryAuthToken } = loadEnv(
         mode,
         process.cwd(),
@@ -107,6 +108,33 @@ export default defineConfig(({ mode }) => {
 
     const nightly =
         mode === 'development' || version.split('-').at(-1).length === 7;
+
+    const appBuildConfig = {
+        target: 'chrome145',
+        outDir: '../build/html',
+        license: true,
+        emptyOutDir: true,
+        copyPublicDir: true,
+        reportCompressedSize: false,
+        chunkSizeWarningLimit: 5000,
+        sourcemap: buildAndUploadSourceMaps ? 'hidden' : false,
+        assetsInlineLimit(filePath) {
+            if (isFont(filePath)) return 0;
+            if (filePath.endsWith('.json')) return 0;
+            return 40960;
+        },
+        rolldownOptions: {
+            preserveEntrySignatures: false,
+            input: {
+                index: resolve(import.meta.dirname, './index.html'),
+                vr: resolve(import.meta.dirname, './vr.html')
+            },
+            output: {
+                assetFileNames: getAssetFilename,
+                manualChunks: getManualChunk
+            }
+        }
+    };
 
     return {
         base: '',
@@ -173,31 +201,27 @@ export default defineConfig(({ mode }) => {
             port: 9000,
             strictPort: true
         },
-        build: {
-            target: 'chrome145',
-            outDir: '../build/html',
-            license: true,
-            emptyOutDir: true,
-            copyPublicDir: true,
-            reportCompressedSize: false,
-            chunkSizeWarningLimit: 5000,
-            sourcemap: buildAndUploadSourceMaps ? 'hidden' : false,
-            assetsInlineLimit(filePath) {
-                if (isFont(filePath)) return 0;
-                if (filePath.endsWith('.json')) return 0;
-                return 40960;
-            },
-            rolldownOptions: {
-                preserveEntrySignatures: false,
-                input: {
-                    index: resolve(import.meta.dirname, './index.html'),
-                    vr: resolve(import.meta.dirname, './vr.html')
-                },
-                output: {
-                    assetFileNames: getAssetFilename,
-                    manualChunks: getManualChunk
-                }
-            }
-        }
+        build: isHeadlessBuild
+            ? {
+                  outDir: '../build/headless',
+                  emptyOutDir: false,
+                  lib: {
+                      entry: resolve(
+                          import.meta.dirname,
+                          '../src-headless/main.js'
+                      ),
+                      formats: ['cjs'],
+                      fileName: () => 'vrcx-headless.cjs'
+                  },
+                  rollupOptions: {
+                      external: [
+                          'node:http',
+                          'node:crypto',
+                          'node:readline/promises',
+                          'node:process'
+                      ]
+                  }
+              }
+            : appBuildConfig
     };
 });
