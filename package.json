@@ -27,6 +27,7 @@
         "lint:oxlint": "oxlint .",
         "typecheck:js": "tsc -p tsconfig.checkjs.json --pretty false",
         "test": "vitest run",
+        "test:remote-sync": "vitest run src/services/remoteSync src-headless src/stores/__tests__/remoteSync.test.js src/views/Settings/components/Tabs/__tests__/RemoteSyncTab.test.js",
         "test:coverage": "vitest run --coverage",
         "build:licenses": "node ./build-scripts/generate-third-party-licenses.js",
         "prod": "cross-env PLATFORM=windows vite build src && npm run build:licenses",
