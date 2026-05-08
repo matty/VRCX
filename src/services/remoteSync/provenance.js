@@ -113,4 +113,56 @@ async function addRemoteSyncItem(item) {
     );
 }
 
-export { addRemoteSyncItem, hasRemoteSyncItem, initRemoteSyncTables };
+async function startRemoteSyncBatch({ batchId, remoteId, startedAt }) {
+    await sqliteService.executeNonQuery(
+        `INSERT OR REPLACE INTO remote_sync_batches (
+            batch_id,
+            remote_id,
+            started_at,
+            status
+        ) VALUES (@batch_id, @remote_id, @started_at, 'running')`,
+        {
+            '@batch_id': batchId,
+            '@remote_id': remoteId,
+            '@started_at': startedAt
+        }
+    );
+}
+
+async function finishRemoteSyncBatch({
+    batchId,
+    finishedAt,
+    status,
+    rowsReceived,
+    rowsImported,
+    rowsSkipped,
+    errorMessage = ''
+}) {
+    await sqliteService.executeNonQuery(
+        `UPDATE remote_sync_batches
+         SET finished_at = @finished_at,
+             status = @status,
+             rows_received = @rows_received,
+             rows_imported = @rows_imported,
+             rows_skipped = @rows_skipped,
+             error_message = @error_message
+         WHERE batch_id = @batch_id`,
+        {
+            '@batch_id': batchId,
+            '@finished_at': finishedAt,
+            '@status': status,
+            '@rows_received': rowsReceived,
+            '@rows_imported': rowsImported,
+            '@rows_skipped': rowsSkipped,
+            '@error_message': errorMessage
+        }
+    );
+}
+
+export {
+    addRemoteSyncItem,
+    finishRemoteSyncBatch,
+    hasRemoteSyncItem,
+    initRemoteSyncTables,
+    startRemoteSyncBatch
+};

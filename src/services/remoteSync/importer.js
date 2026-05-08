@@ -1,5 +1,10 @@
 import sqliteService from '../sqlite.js';
-import { addRemoteSyncItem, hasRemoteSyncItem } from './provenance.js';
+import {
+    addRemoteSyncItem,
+    finishRemoteSyncBatch,
+    hasRemoteSyncItem,
+    startRemoteSyncBatch
+} from './provenance.js';
 import {
     REMOTE_SYNC_SCHEMA_VERSION,
     getSyncTableDefinition
@@ -21,6 +26,7 @@ async function importDeltaBatch({
     }
 
     const batchId = createBatchId();
+    const importedAt = new Date().toJSON();
     const result = {
         batchId,
         rowsReceived: 0,
@@ -28,6 +34,11 @@ async function importDeltaBatch({
         rowsSkipped: 0
     };
 
+    await startRemoteSyncBatch({
+        batchId,
+        remoteId,
+        startedAt: importedAt
+    });
     await sqliteService.executeNonQuery('BEGIN');
 
     try {
@@ -71,7 +82,7 @@ async function importDeltaBatch({
                     localRowId: '',
                     localRowKey: row.source_row_key,
                     batchId,
-                    importedAt: new Date().toJSON()
+                    importedAt
                 };
                 await addRemoteSyncItem(remoteSyncItem);
                 result.rowsImported++;
@@ -79,8 +90,21 @@ async function importDeltaBatch({
         }
 
         await sqliteService.executeNonQuery('COMMIT');
+        await finishRemoteSyncBatch({
+            ...result,
+            batchId,
+            finishedAt: new Date().toJSON(),
+            status: 'success'
+        });
     } catch (error) {
         await sqliteService.executeNonQuery('ROLLBACK');
+        await finishRemoteSyncBatch({
+            ...result,
+            batchId,
+            finishedAt: new Date().toJSON(),
+            status: 'failed',
+            errorMessage: error.message || String(error)
+        });
         throw error;
     }
 

@@ -8,6 +8,7 @@ vi.mock('../../sqlite.js', () => {
             calls,
             provenanceHit: false,
             provenanceKeys: new Set(),
+            throwOnInsert: false,
             async execute(callback, sql, args) {
                 calls.push({ sql, args });
 
@@ -21,6 +22,12 @@ vi.mock('../../sqlite.js', () => {
             },
             async executeNonQuery(sql, args) {
                 calls.push({ sql, args });
+                if (
+                    this.throwOnInsert &&
+                    sql.includes('INSERT OR IGNORE INTO')
+                ) {
+                    throw new Error('insert failed');
+                }
                 return 1;
             }
         }
@@ -79,6 +86,7 @@ describe('remote sync importer', () => {
         sqliteService.calls.length = 0;
         sqliteService.provenanceHit = false;
         sqliteService.provenanceKeys.clear();
+        sqliteService.throwOnInsert = false;
     });
 
     test('creates source, batch, and item tables with both lookup indexes', async () => {
@@ -274,5 +282,44 @@ describe('remote sync importer', () => {
         expect(result.rowsImported).toBe(0);
         expect(result.rowsSkipped).toBe(1);
         expect(statements()).not.toContain('INSERT INTO cache_world');
+    });
+
+    test('records failed batch without a success update', async () => {
+        sqliteService.throwOnInsert = true;
+
+        await expect(
+            importDeltaBatch({
+                remoteId: 'remote-1',
+                remoteOwnerUserId: 'usr_owner',
+                userPrefix: 'usrowner',
+                batch: createBatch({
+                    feed_online_offline: {
+                        rows: [
+                            {
+                                ...onlineOfflineRow,
+                                source_row_key: buildSourceRowKey(
+                                    'feed_online_offline',
+                                    onlineOfflineRow
+                                ),
+                                source_row_hash: 'hash-online'
+                            }
+                        ]
+                    }
+                })
+            })
+        ).rejects.toThrow('insert failed');
+
+        expect(statements()).toContain('ROLLBACK');
+        expect(statements()).toContain('@status');
+        expect(
+            sqliteService.calls.some(
+                ({ args }) => args?.['@status'] === 'failed'
+            )
+        ).toBe(true);
+        expect(
+            sqliteService.calls.some(
+                ({ args }) => args?.['@status'] === 'success'
+            )
+        ).toBe(false);
     });
 });

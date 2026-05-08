@@ -8,6 +8,27 @@ import { importDeltaBatch } from '../services/remoteSync/importer.js';
 import { useUserStore } from './user.js';
 
 const CONFIG_KEY = 'VRCX_remoteSyncSource';
+const CURSOR_TABLES = [
+    'feed_gps',
+    'feed_status',
+    'feed_bio',
+    'feed_avatar',
+    'feed_online_offline',
+    'friend_log_history',
+    'cache_world',
+    'cache_avatar'
+];
+
+function buildSinceByTable(remote) {
+    if (!remote?.lastSyncAt) {
+        return {};
+    }
+
+    const overlap = new Date(remote.lastSyncAt);
+    overlap.setHours(overlap.getHours() - 24);
+    const since = overlap.toJSON();
+    return Object.fromEntries(CURSOR_TABLES.map((table) => [table, since]));
+}
 
 export const useRemoteSyncStore = defineStore('RemoteSync', () => {
     const remote = ref(null);
@@ -72,7 +93,7 @@ export const useRemoteSyncStore = defineStore('RemoteSync', () => {
                 remoteUrl: remote.value.remoteUrl,
                 clientId: remote.value.clientId,
                 clientSecret: remote.value.clientSecret,
-                sinceByTable: {},
+                sinceByTable: buildSinceByTable(remote.value),
                 limit: 500
             });
             const result = await importDeltaBatch({
@@ -113,3 +134,5 @@ export const useRemoteSyncStore = defineStore('RemoteSync', () => {
         forgetRemote
     };
 });
+
+export { buildSinceByTable };

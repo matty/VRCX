@@ -94,11 +94,20 @@ describe('useRemoteSyncStore', () => {
             remoteUrl: 'http://127.0.0.1:14590',
             remoteUserId: 'usr_owner',
             clientId: 'rsc_1',
-            clientSecret: 'vrcx_cs_1'
+            clientSecret: 'vrcx_cs_1',
+            lastSyncAt: '2026-05-08T12:00:00.000Z'
         };
 
         await store.syncNow();
 
+        expect(remoteSyncClient.delta).toHaveBeenCalledWith(
+            expect.objectContaining({
+                sinceByTable: expect.objectContaining({
+                    feed_online_offline: '2026-05-07T12:00:00.000Z',
+                    cache_world: '2026-05-07T12:00:00.000Z'
+                })
+            })
+        );
         expect(importDeltaBatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 remoteId: 'rsc_1',
