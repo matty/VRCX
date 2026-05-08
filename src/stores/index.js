@@ -18,6 +18,7 @@ import { useGameLogStore } from './gameLog';
 import { useGameStore } from './game';
 import { useGeneralSettingsStore } from './settings/general';
 import { useQuickSearchStore } from './quickSearch';
+import { useRemoteSyncStore } from './remoteSync';
 import { useGroupStore } from './group';
 import { useInstanceStore } from './instance';
 import { useInviteStore } from './invite';
@@ -162,7 +163,8 @@ export function createGlobalStores() {
         charts: useChartsStore(),
         dashboard: useDashboardStore(),
         modal: useModalStore(),
-        quickSearch: useQuickSearchStore()
+        quickSearch: useQuickSearchStore(),
+        remoteSync: useRemoteSyncStore()
     };
 }
 
@@ -205,5 +207,6 @@ export {
     useUpdateLoopStore,
     useVrcStatusStore,
     useModalStore,
-    useQuickSearchStore
+    useQuickSearchStore,
+    useRemoteSyncStore
 };
