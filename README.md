@@ -61,6 +61,7 @@ Beta/nightly build available [here](https://vrcx.app/github/nightly) or in-app `
 - Want a new look for VRCX? Check out [Themes](https://github.com/vrcx-team/VRCX/wiki/Themes)
 - See [Building from source](https://github.com/vrcx-team/VRCX/wiki/Building-from-source) for instructions on how to build VRCX from source.
 - For a guide on how to run VRCX on Linux, see [here](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)
+- For headless server collection and desktop pull-sync, see [Headless Remote Sync](docs/headless-remote-sync.md).
 - Interested in contributing? See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 # Screenshots
