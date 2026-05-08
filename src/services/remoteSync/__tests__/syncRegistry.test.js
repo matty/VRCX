@@ -158,7 +158,9 @@ describe('remote sync registry', () => {
             group_name: ''
         };
 
-        await expect(buildSourceRowHash('feed_online_offline', row)).resolves.not.toBe(
+        await expect(
+            buildSourceRowHash('feed_online_offline', row)
+        ).resolves.not.toBe(
             await buildSourceRowHash('feed_online_offline', {
                 ...row,
                 world_name: 'Other World'
@@ -209,7 +211,9 @@ describe('remote sync registry', () => {
     });
 
     test('returned table definitions cannot mutate registry order or length', () => {
-        const originalNames = getSyncTableDefinitions().map((table) => table.name);
+        const originalNames = getSyncTableDefinitions().map(
+            (table) => table.name
+        );
         const definitions = getSyncTableDefinitions();
 
         try {
@@ -220,7 +224,9 @@ describe('remote sync registry', () => {
             // Frozen arrays throw on mutation; copied arrays allow local mutation.
         }
 
-        const currentNames = getSyncTableDefinitions().map((table) => table.name);
+        const currentNames = getSyncTableDefinitions().map(
+            (table) => table.name
+        );
 
         expect(currentNames).toEqual(originalNames);
         expect(currentNames).toHaveLength(originalNames.length);
