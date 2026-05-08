@@ -15,6 +15,7 @@ import { tableFixes } from './tableFixes.js';
 import { tableSize } from './tableSize.js';
 import { worldFavorites } from './worldFavorites.js';
 
+import { initRemoteSyncTables } from '../remoteSync/provenance.js';
 import sqliteService from '../sqlite.js';
 
 const dbVars = {
@@ -216,6 +217,7 @@ const database = {
         await sqliteService.executeNonQuery(
             `CREATE TABLE IF NOT EXISTS avatar_tags (avatar_id TEXT NOT NULL, tag TEXT NOT NULL, color TEXT, PRIMARY KEY (avatar_id, tag))`
         );
+        await initRemoteSyncTables();
     },
 
     begin() {
