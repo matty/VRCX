@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import http from 'node:http';
 
 async function readJson(req) {

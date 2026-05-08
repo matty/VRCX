@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { webcrypto } from 'node:crypto';
 
 const encoder = new TextEncoder();
