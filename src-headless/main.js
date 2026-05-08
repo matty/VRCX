@@ -1,7 +1,8 @@
 import { parseHeadlessArgs } from './cliArgs.js';
+import { loginHeadlessIfNeeded } from './headlessLogin.js';
 import { startHeadlessRuntime } from './headlessRuntime.js';
 
-export { parseHeadlessArgs, startHeadlessRuntime };
+export { loginHeadlessIfNeeded, parseHeadlessArgs, startHeadlessRuntime };
 
 async function startFromGlobals() {
     const args = parseHeadlessArgs(process.argv.slice(2));
@@ -10,7 +11,13 @@ async function startFromGlobals() {
         args,
         dotnet: globalThis.VRCXDotNet,
         ownerUser: globalThis.VRCXHeadlessOwnerUser,
-        loginIfNeeded: globalThis.VRCXHeadlessLogin
+        loginIfNeeded:
+            globalThis.VRCXHeadlessLogin ||
+            (({ forceLogin }) =>
+                loginHeadlessIfNeeded({
+                    WebApi: globalThis.VRCXDotNet.WebApi,
+                    forceLogin
+                }))
     });
 }
 

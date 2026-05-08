@@ -912,7 +912,11 @@ async function startHeadlessElectron() {
         rootDir,
         'build/headless/vrcx-headless.cjs'
     );
-    const { parseHeadlessArgs, startHeadlessRuntime } = require(headlessBundle);
+    const {
+        loginHeadlessIfNeeded,
+        parseHeadlessArgs,
+        startHeadlessRuntime
+    } = require(headlessBundle);
     const headlessArgs = parseHeadlessArgs(args);
     const ownerUser = { current: null };
 
@@ -924,9 +928,11 @@ async function startHeadlessElectron() {
             WebApi: interopApi.getDotNetObject('WebApi')
         },
         ownerUser,
-        loginIfNeeded: async () => {
-            throw new Error('Headless console login is wired in Task 9');
-        }
+        loginIfNeeded: ({ forceLogin }) =>
+            loginHeadlessIfNeeded({
+                WebApi: interopApi.getDotNetObject('WebApi'),
+                forceLogin
+            })
     });
 }
 

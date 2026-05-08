@@ -217,6 +217,7 @@ export default defineConfig(({ mode }) => {
                       external: [
                           'node:http',
                           'node:crypto',
+                          'node:buffer',
                           'node:readline/promises',
                           'node:process'
                       ]
