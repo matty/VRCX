@@ -48,4 +48,69 @@ async function initRemoteSyncTables() {
     );
 }
 
-export { initRemoteSyncTables };
+async function hasRemoteSyncItem(remoteId, sourceTable, sourceRowKey) {
+    let exists = false;
+
+    await sqliteService.execute(
+        () => {
+            exists = true;
+        },
+        `SELECT 1 FROM remote_sync_items
+         WHERE remote_id = @remoteId
+           AND source_table = @sourceTable
+           AND source_row_key = @sourceRowKey
+         LIMIT 1`,
+        {
+            '@remoteId': remoteId,
+            '@sourceTable': sourceTable,
+            '@sourceRowKey': sourceRowKey
+        }
+    );
+
+    return exists;
+}
+
+async function addRemoteSyncItem(item) {
+    await sqliteService.executeNonQuery(
+        `INSERT INTO remote_sync_items (
+            remote_id,
+            remote_owner_user_id,
+            source_table,
+            source_row_id,
+            source_row_key,
+            source_row_hash,
+            local_table,
+            local_row_id,
+            local_row_key,
+            batch_id,
+            imported_at
+        ) VALUES (
+            @remoteId,
+            @remoteOwnerUserId,
+            @sourceTable,
+            @sourceRowId,
+            @sourceRowKey,
+            @sourceRowHash,
+            @localTable,
+            @localRowId,
+            @localRowKey,
+            @batchId,
+            @importedAt
+        )`,
+        {
+            '@remoteId': item.remoteId,
+            '@remoteOwnerUserId': item.remoteOwnerUserId,
+            '@sourceTable': item.sourceTable,
+            '@sourceRowId': item.sourceRowId,
+            '@sourceRowKey': item.sourceRowKey,
+            '@sourceRowHash': item.sourceRowHash,
+            '@localTable': item.localTable,
+            '@localRowId': item.localRowId,
+            '@localRowKey': item.localRowKey,
+            '@batchId': item.batchId,
+            '@importedAt': item.importedAt
+        }
+    );
+}
+
+export { addRemoteSyncItem, hasRemoteSyncItem, initRemoteSyncTables };
